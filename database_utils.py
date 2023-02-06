@@ -1,37 +1,54 @@
-import pyodbc
+#%%
+import yaml
+from sqlalchemy import create_engine
+import psycopg2
+from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import sessionmaker
+import pandas as pd 
+from sqlalchemy import inspect
 
 class DatabaseConnector:
-    def __init__(self, server, database, username, password):
-        self.server = server
-        self.database = database
-        self.username = username
-        self.password = password
-    
-    def create_connection(self):
-        connection = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+self.server+';DATABASE='+self.database+';UID='+self.username+';PWD='+ self.password)
-        return connection
-    
-    def close_connection(self, connection):
-        connection.close()
-    
-    def execute_query(self, connection, query):
-        cursor = connection.cursor()
-        cursor.execute(query)
-        connection.commit()
-        return cursor
-    
-    def execute_read_query(self, connection, query):
-        cursor = connection.cursor()
-        cursor.execute(query)
-        return cursor
+    def __init__(self):
+        self.creds = self.read_db_creds("db_creds.yaml")
+        self.engine = self.init_db_engine()
+    # STEP 2
+    def read_db_creds(self, file_path):
+        with open(file_path, 'r') as file:
+            creds = yaml.safe_load(file)
+        return creds
 
-connector = DatabaseConnector(server='your_server_name', database='your_database_name', username='your_username', password='your_password')
+    #creds = read_db_creds('db_creds.yaml')
+    #print(creds)
 
-# create a connection to the database
-connection = connector.create_connection()
+    # STEP 3
+    def init_db_engine(self):
+        creds = self.creds
+        # format the connection string using the credentials
+        conn_string = 'postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}'.format(
+            user=creds['RDS_USER'],
+            password=creds['RDS_PASSWORD'],
+            host=creds['RDS_HOST'],
+            port=creds['RDS_PORT'],
+            database=creds['RDS_DATABASE']
+        )
+        # create the engine using the connection string
+        engine = create_engine(conn_string)
+        return engine
 
-# execute a query
-cursor = connector.execute_query(connection, "INSERT INTO table_name (column1, column2) VALUES (value1, value2)")
+        #STEP 4
+    def list_db_tables(self):
+        # retrieve the table names 
+        inspector = inspect(self.engine)
+        return inspector.get_table_names()
+        
 
-# close the connection
-connector.close_connection(connection)
+        # STEP 7 
+    def upload_to_db(self, df, table_name):
+        #engine = init_db_engine()
+        df.to_sql(table_name, if_exists='replace')
+
+connector = DatabaseConnector()
+connector.engine.connect()
+#engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{creds['RDS_USER']}:{creds['RDS_PASSWORD']}@{creds['RDS_HOST']}:{creds['RDS_PORT']}/{creds['RDS_DATABASE']}")
+#engine.connect() # connect the database with the 
+# %%

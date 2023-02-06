@@ -1,28 +1,32 @@
+import pandas as pd
+
+# Step 6
 class DataClean:
     def __init__(self):
         pass
     
-    def clean_csv_data(self, df):
-        # perform data cleaning operations on the dataframe
-        return df
-    
-    def clean_excel_data(self, df):
-        # perform data cleaning operations on the dataframe
-        return df
-    
-    def clean_database_data(self, df):
-        # perform data cleaning operations on the dataframe
-        return df
-    
-    def clean_api_data(self, df):
-        # perform data cleaning operations on the dataframe
-        return df
+    def clean_user_data(df):
+        # Replace NULL values with a default value or method of your choice
+        df.fillna(0, inplace=True)
 
-cleaner = DataClean()
+        # Convert age column to integer if possible, otherwise replace with default value
+        def to_int(x):
+            try:
+                return int(x)
+            except:
+                return 0
 
-# load data from a CSV file into a DataFrame
-import pandas as pd
-df = pd.read_csv('data.csv')
+        df['age'] = df['age'].apply(to_int)
 
-# clean the data in the DataFrame
-cleaned_df = cleaner.clean_csv_data(df)
+        # Remove rows with incorrect or inconsistent information
+        df = df[df['age'] >= 0]
+
+        return df
+    #This method takes a pandas DataFrame as an argument and returns a cleaned version of the DataFrame. It first replaces any NULL values with a default value of 0, then converts the age column to integer if possible, otherwise replaces with default value. Finally, it removes any rows with incorrect or inconsistent information by keeping only those rows where the age column is greater than or equal to 0.
+
+    
+
+
+
+
+    
