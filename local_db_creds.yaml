@@ -1,0 +1,6 @@
+RDS_HOST: localhost
+RDS_PASSWORD: "1995"
+RDS_USER: postgres
+RDS_DATABASE: postgres
+RDS_PORT: 5432
+DATABASE: "Sales_Data"

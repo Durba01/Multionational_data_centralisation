@@ -1,44 +1,48 @@
-import pyodbc
+#%%
+import yaml
+from sqlalchemy import create_engine
+import psycopg2
+import pandas as pd 
+from sqlalchemy import inspect
 
 class DatabaseConnector:
-    def __init__(self, server, database, username, password):
-        self.server = server
-        self.database = database
-        self.username = username
-        self.password = password
+    def __init__(self):
+        self.creds = self.read_db_creds("db_creds.yaml")
+        #self.engine = self.init_db_engine()
+    # STEP 2
+    def read_db_creds(self, file_path):
+        with open(file_path, 'r') as file:
+            creds = yaml.safe_load(file)
+        return creds
+
+    #creds = read_db_creds('db_creds.yaml')
+    #print(creds)
+
+    # STEP 3
+    def init_db_engine(self, creds):
+        '''take data from read_db_creds, return sqlalchemy database engine'''
+        engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{creds['RDS_USER']}:{creds['RDS_PASSWORD']}@{creds['RDS_HOST']}:{creds['RDS_PORT']}/{creds['RDS_DATABASE']}")
+        engine.connect()
+        return engine
+
+       #STEP 4
+    def list_db_tables(self, engine):
+        # retrieve the table names 
+        inspector = inspect(engine)
+        return inspector.get_table_names()
     
-    def create_connection(self):
-        connection = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+self.server+';DATABASE='+self.database+';UID='+self.username+';PWD='+ self.password)
-        return connection
+    # STEP 7 
+    def upload_to_db(self, df, table_name):
+        self.creds = self.read_db_creds("local_db_creds.yaml")
+        self.engine = self.init_db_engine(creds=self.creds) # I added the cred argument in
+        df.to_sql(table_name, self.engine, if_exists='replace', index=False)
+
     
-    def close_connection(self, connection):
-        connection.close()
-    
-    def execute_query(self, connection, query):
-        cursor = connection.cursor()
-        cursor.execute(query)
-        connection.commit()
-        return cursor
-    
-    def execute_read_query(self, connection, query):
-        cursor = connection.cursor()
-        cursor.execute(query)
-        return cursor
+connector = DatabaseConnector()
+creds = connector.read_db_creds("db_creds.yaml")
+engine = connector.init_db_engine(creds)
 
-connector = DatabaseConnector(server='your_server_name', database='your_database_name', username='your_username', password='your_password')
-
-# create a connection to the database
-connection = connector.create_connection()
-
-# execute a query
-cursor = connector.execute_query(connection, "INSERT INTO table_name (column1, column2) VALUES (value1, value2)")
-
-# close the connection
-connector.close_connection(connection)
-
-# STEP 7 
-def upload_to_db(self, df, table_name):
-    engine = init_db_engine()
-    df.to_sql(table_name, engine, if_exists='replace')
-
+# TASK 7 
+table_list = connector.list_db_tables(engine)
+table_list
 

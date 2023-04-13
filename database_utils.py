@@ -34,21 +34,10 @@ class DatabaseConnector:
         # create the engine using the connection string
         engine = create_engine(conn_string)
         return engine
-
-        #STEP 4
-    def list_db_tables(self):
-        # retrieve the table names 
-        inspector = inspect(self.engine)
-        return inspector.get_table_names()
         
+#def __init__(self):
+    #creds = self.read_db_creds("db_creds.yaml")
+    #engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{creds['RDS_USER']}:{creds['RDS_PASSWORD']}@{creds['RDS_HOST']}:{creds['RDS_PORT']}/{creds['RDS_DATABASE']}")
+    #engine.connect() # connect the database with the 
 
-        # STEP 7 
-    def upload_to_db(self, df, table_name):
-        #engine = init_db_engine()
-        df.to_sql(table_name, if_exists='replace')
-
-connector = DatabaseConnector()
-connector.engine.connect()
-#engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{creds['RDS_USER']}:{creds['RDS_PASSWORD']}@{creds['RDS_HOST']}:{creds['RDS_PORT']}/{creds['RDS_DATABASE']}")
-#engine.connect() # connect the database with the 
 # %%
