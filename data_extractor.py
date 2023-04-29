@@ -81,12 +81,11 @@ user_df = extractor.read_rds_table(engine, 'legacy_users')
 user_df
 
 # Retrive data saved and load to db
-data_df = pd.read_csv("cleaned_data.csv")
+data_df = pd.read_csv("updated_cleaned_data.csv")
 data_df.head()
 
 # Upload to db
 load = connector.upload_to_db(df=data_df,table_name='dim_users')
-load
 
 # Extracting pdf_data 
 pdf_data = extractor.retrieve_pdf_data("https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf")
@@ -94,10 +93,10 @@ pdf_data.head()
 
 # Uploading pdf_data to db
 df_pdf = pd.read_csv("pdf_data.csv")
-pdf_data_load = connector.upload_to_db(df = df_pdf, table_name='dim_card_details')
-pdf_data_load
+connector.upload_to_db(df = df_pdf, table_name='dim_card_details')
 
- #Retrieve a store 
+# TASK 5
+# Retrieve a store 
 headers = {
     'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'
 }
@@ -109,38 +108,38 @@ retrieve_store
 # Retrieve store data 
 end_point_2 = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/'
 store_data = extractor.retrieve_stores_data(endpoint = end_point_2, headers=headers, store_number=450)
-print(store_data.head())
+store_data = store_data.drop(['lat'], axis=1)
+store_data.dropna(subset=['latitude'], axis=0, inplace=True)
+
+# uploading Store_data or store_details 
+connector.upload_to_db(df = store_data, table_name='dim_store_details')
 
 # TASK 6 
-#s3_address = 's3://data-handling-public/products.csv'
-#s3_data = extractor.extract_from_s3(s3_address)
-#s3_data.head()
+s3_address = 's3://data-handling-public/products.csv'
+s3_data = extractor.extract_from_s3(s3_address)
+s3_data.head()
 
 # Uploading cleaned s3_data to db
-#s3_data_bot = pd.read_csv("s3_data.csv")
-#s3_load = connector.upload_to_db(df = s3_data_bot, table_name='dim_products')
-#s3_load
+s3_data_bot = pd.read_csv("s3_data.csv")
+s3_load = connector.upload_to_db(df = s3_data_bot, table_name='dim_products')
 
 # TASK 7 
-# Retreve the orders_table table from the central database
-#orders_df = extractor.read_rds_table(engine, 'orders_table')
-#orders_df.head()
+ #Retreve the orders_table table from the central database
+orders_df = extractor.read_rds_table(engine, 'orders_table')
+orders_df.head()
 
 # Uploading cleaned orders_data to db
-#user_order = pd.read_csv("orders_df.csv")
-#user_load = connector.upload_to_db(df = user_order, table_name='orders_table')
-#user_load
+user_order = pd.read_csv("orders_df.csv")
+user_load = connector.upload_to_db(df = user_order, table_name='orders_table')
 
 # TASK 8 
 # Extracting json data from AWS CLoud 
-#bucket_name = 'data-handling-public'
-#key = 'date_details.json'
-#json_data = extractor.get_json_from_s3(bucket_name, key)
-#json_data
+bucket_name = 'data-handling-public'
+key = 'date_details.json'
+json_data = extractor.get_json_from_s3(bucket_name, key)
+json_df = pd.DataFrame(json_data)
 
 # Uploading cleaned j_data to db
-#j_data = pd.read_csv("j_data_csv")
-#j_load = connector.upload_to_db(df = j_data, table_name='dim_date_times')
-#j_load
+connector.upload_to_db(df = json_df, table_name='dim_date_times')
 
 # %%
